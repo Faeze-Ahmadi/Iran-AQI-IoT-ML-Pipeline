@@ -15,7 +15,6 @@ The project is designed as a realistic, production-inspired pipeline that connec
 
 The pipeline fetches live AQI data from a public API, stores historical records in a SQLite database, and generates visual insights such as city-level AQI comparisons.
 
-
 ## Project Structure
 
 - `src/` : Main source code
@@ -27,6 +26,14 @@ The pipeline fetches live AQI data from a public API, stores historical records 
 - `data/` : Generated datasets, database, and plots
 - `notebooks/` : (Future) exploratory analysis
 - `main.py` : Application entry point
+
+## Next Steps
+
+- Collect and accumulate historical AQI data over time
+- Perform time-series analysis and advanced visualizations
+- Prepare features for machine learning models
+- Train and evaluate AQI forecasting models
+- Export trained models to ONNX for deployment
 
 ## Data Source
 
