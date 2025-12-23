@@ -1,36 +1,41 @@
-import pandas as pd
-import matplotlib.pyplot as plt
+from __future__ import annotations
+
 from pathlib import Path
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+import numpy as np
+import matplotlib.pyplot as plt
 
 
-def plot_actual_vs_predicted(csv_path: Path, out_path: Path) -> None:
-    df = pd.read_csv(csv_path, sep=";", decimal=",")
+def plot_actual_vs_predicted(
+    y_true,
+    y_pred,
+    out_path: Path,
+    title: str = "Actual vs Predicted",
+) -> None:
+    """
+    Plot Actual vs Predicted values and save to file.
 
-    df["CO(GT)"] = pd.to_numeric(df["CO(GT)"], errors="coerce")
-    df["PT08.S1(CO)"] = pd.to_numeric(df["PT08.S1(CO)"], errors="coerce")
-
-    df = df.dropna(subset=["CO(GT)", "PT08.S1(CO)"])
-
-    X = df[["PT08.S1(CO)"]]
-    y = df["CO(GT)"]
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    preds = model.predict(X_test)
+    Parameters
+    ----------
+    y_true : array-like
+        Ground truth values
+    y_pred : array-like
+        Predicted values
+    out_path : Path
+        Output path for the plot
+    title : str
+        Plot title
+    """
+    y_true = np.asarray(y_true).ravel()
+    y_pred = np.asarray(y_pred).ravel()
 
     plt.figure(figsize=(6, 6))
-    plt.scatter(y_test, preds, alpha=0.5)
-    plt.xlabel("Actual CO(GT)")
-    plt.ylabel("Predicted CO(GT)")
-    plt.title("UCI Air Quality: Actual vs Predicted")
+    plt.scatter(y_true, y_pred, alpha=0.5)
+    plt.xlabel("Actual")
+    plt.ylabel("Predicted")
+    plt.title(title)
     plt.grid(True)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out_path)
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=200)
     plt.close()

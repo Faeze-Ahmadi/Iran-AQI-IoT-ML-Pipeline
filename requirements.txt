@@ -3,5 +3,6 @@ numpy
 matplotlib
 scikit-learn
 onnxruntime
+skl2onnx
 requests
 python-dotenv

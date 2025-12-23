@@ -1,73 +1,45 @@
-"""
-Main entry point for the Iran AQI IoT-ML pipeline.
-This script orchestrates data collection, storage, and visualization.
-"""
+from __future__ import annotations
 
+import argparse
 import logging
 
-# from .config.settings import load_settings
-# from .data_loader.aqi_api_client import AQIAPIClient
-# from .pipeline.collector import collect_records
-# from .storage.sqlite_storage import SQLiteStorage
-# from .visualization.plots import PlotService
-
-from .ml.train_uci_model import train_and_export_uci_model
-from pathlib import Path
-from .visualization.uci_plots import plot_actual_vs_predicted
+from src.config.settings import load_settings
+from src.pipeline.uci_runner import run_uci_pipeline
+from src.pipeline.aqicn_runner import run_aqicn_pipeline
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+logger = logging.getLogger("pip")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description="AQI Pipeline (UCI core + AQICN bonus)")
+    p.add_argument("--mode", choices=["uci", "aqicn"], default="uci", help="Execution mode")
+    return p
 
 
 def main() -> None:
-    """
     settings = load_settings()
+    args = build_parser().parse_args()
 
-    client = AQIAPIClient()  # uses .env internally too (OK for now)
-    storage = SQLiteStorage(settings.db_path)
+    try:
+        if args.mode == "uci":
+            run_uci_pipeline(
+                uci_csv=settings.uci_csv_path,
+                onnx_out=settings.models_dir / "uci_co_model.onnx",
+                plot_out=settings.plots_dir / "uci_actual_vs_pred.png",
+            )
+        else:
+            run_aqicn_pipeline(
+                api_token=settings.aqicn_api_token,
+                db_path=settings.aqicn_db_path,
+                plots_dir=settings.plots_dir,
+                cities=settings.cities,
+            )
 
-    result = collect_records(client, settings.cities)
-
-    if result.errors:
-        for e in result.errors:
-            logging.warning(f"Collector error: {e}")
-
-    inserted = storage.insert_many(result.records)
-    logging.info(f"Inserted {inserted} rows into SQLite DB: {settings.db_path}")
-
-    latest = storage.fetch_latest_per_city()
-
-    plotter = PlotService(settings.data_dir / "plots")
-    out = plotter.plot_latest_aqi_bar(latest, filename="latest_aqi.png")
-    logging.info(f"Saved plot: {out}")
-
-    # Train ML model on UCI dataset and export to ONNX
-    uci_csv = Path("data/uci/AirQualityUCI.csv")
-    onnx_out = Path("data/models/uci_co_model.onnx")
-
-    train_and_export_uci_model(
-        csv_path=uci_csv,
-        out_path=onnx_out
-    )
-    """
-
-    uci_csv = Path("data/uci/AirQualityUCI.csv")
-    onnx_out = Path("data/models/uci_co_model.onnx")
-
-    train_and_export_uci_model(
-        csv_path=uci_csv,
-        out_path=onnx_out
-    )
-
-    logging.info(f"ONNX model exported to: {onnx_out}")
-
-    plot_path = Path("data/plots/uci_actual_vs_pred.png")
-    plot_actual_vs_predicted(uci_csv, plot_path)
-
-    logging.info(f"Visualization saved to: {plot_path}")
+    except Exception as e:
+        logger.exception("Fatal error: %s", e)
+        raise
 
 
 if __name__ == "__main__":

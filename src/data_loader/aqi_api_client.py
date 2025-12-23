@@ -18,9 +18,6 @@ class AQIAPIClient:
         load_dotenv()
         self.api_token = os.getenv("AQICN_API_TOKEN")
 
-        print("DEBUG | Loaded API token:", self.api_token)
-
-
         if not self.api_token:
             raise ValueError(
                 "API token not found. Please set AQICN_API_TOKEN in .env file."
