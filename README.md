@@ -1,4 +1,3 @@
-```markdown
 # Air Quality Prediction Pipeline
 
 A modular and extensible air quality prediction pipeline designed for offline and online data sources, with a strong focus on clean architecture, reproducibility, and real-world data challenges.
