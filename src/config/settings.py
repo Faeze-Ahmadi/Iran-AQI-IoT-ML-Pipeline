@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True)
 class Settings:
-    # Paths
     project_root: Path
     data_dir: Path
     plots_dir: Path
@@ -24,13 +23,6 @@ class Settings:
 
 
 def load_settings() -> Settings:
-    """
-    Load project settings.
-
-    IMPORTANT:
-    - AQICN_API_TOKEN is OPTIONAL
-    - Only required when running in `aqicn` mode
-    """
     load_dotenv()
 
     project_root = Path(".").resolve()
@@ -46,7 +38,6 @@ def load_settings() -> Settings:
 
     uci_csv_path = uci_dir / "AirQualityUCI.csv"
 
-    # AQICN token is OPTIONAL
     token = os.getenv("AQICN_API_TOKEN")
     if token:
         token = token.strip()

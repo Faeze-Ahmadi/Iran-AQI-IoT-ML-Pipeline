@@ -5,10 +5,6 @@ from typing import Dict, Any
 from dotenv import load_dotenv
 
 class AQIAPIClient:
-    """
-    Client for fetching real-time Air Quality Index (AQI) data
-    from the AQICN (World Air Quality Index) API.
-    """
 
     BASE_URL = "https://api.waqi.info/feed"
 
@@ -23,19 +19,6 @@ class AQIAPIClient:
             raise ValueError("API token not found. Please set AQICN_API_TOKEN in .env file.")
 
     def fetch_city_aqi(self, city: str) -> Dict[str, Any]:
-        """
-        Fetch real-time AQI data for a given city.
-
-        Parameters
-        ----------
-        city : str
-            City name (e.g., 'tehran', 'isfahan').
-
-        Returns
-        -------
-        dict
-            Parsed AQI data.
-        """
         url = f"{self.BASE_URL}/{city}/?token={self.api_token}"
 
         try:
@@ -52,9 +35,6 @@ class AQIAPIClient:
         return self._parse_response(city, data["data"])
 
     def _parse_response(self, city: str, raw: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Parse raw API response into a clean dictionary.
-        """
         iaqi = raw.get("iaqi", {})
 
         return {

@@ -8,13 +8,10 @@ UCI_MISSING_SENTINEL = -200
 
 
 def load_uci_air_quality(csv_path: Path) -> pd.DataFrame:
-    """
-    Load UCI Air Quality dataset and create a Datetime column.
-    """
+    # Load UCI Air Quality dataset and create a Datetime column.
     df = pd.read_csv(csv_path, sep=";", decimal=",")
     df = df.dropna(axis=1, how="all")
 
-    # Drop possible empty last column
     if df.columns[-1].startswith("Unnamed"):
         df = df.iloc[:, :-1]
 
@@ -31,9 +28,6 @@ def load_uci_air_quality(csv_path: Path) -> pd.DataFrame:
 
 
 def preprocess_uci_for_co_regression(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Minimal preprocessing for CO(GT) regression task.
-    """
     work = df.copy()
 
     for col in ["CO(GT)", "PT08.S1(CO)"]:
