@@ -2,9 +2,7 @@ import os
 import requests
 from datetime import datetime
 from typing import Dict, Any
-
 from dotenv import load_dotenv
-
 
 class AQIAPIClient:
     """
@@ -14,14 +12,15 @@ class AQIAPIClient:
 
     BASE_URL = "https://api.waqi.info/feed"
 
-    def __init__(self) -> None:
-        load_dotenv()
-        self.api_token = os.getenv("AQICN_API_TOKEN")
+    def __init__(self, api_token: str = None) -> None:
+        if api_token:
+            self.api_token = api_token  # Use provided token
+        else:
+            load_dotenv()  # Load environment variables from .env if no token is provided
+            self.api_token = os.getenv("AQICN_API_TOKEN")
 
         if not self.api_token:
-            raise ValueError(
-                "API token not found. Please set AQICN_API_TOKEN in .env file."
-            )
+            raise ValueError("API token not found. Please set AQICN_API_TOKEN in .env file.")
 
     def fetch_city_aqi(self, city: str) -> Dict[str, Any]:
         """
@@ -41,7 +40,7 @@ class AQIAPIClient:
 
         try:
             response = requests.get(url, timeout=10)
-            response.raise_for_status()
+            response.raise_for_status()  # This will raise an error for bad responses (4xx/5xx)
         except requests.RequestException as e:
             raise RuntimeError(f"Network/API error for city '{city}'") from e
 

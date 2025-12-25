@@ -18,10 +18,11 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+
 def main() -> None:
     settings = load_settings()
     args = build_parser().parse_args()
-
+    print(f"AQICN API token: {settings.aqicn_api_token}")
     try:
         if args.mode == "uci":
             run_uci_pipeline(

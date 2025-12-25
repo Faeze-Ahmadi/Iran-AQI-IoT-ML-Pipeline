@@ -1,8 +1,6 @@
-from __future__ import annotations
-from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from pathlib import Path
 
 class PlotService:
     """Creates presentation-ready plots."""
@@ -27,6 +25,24 @@ class PlotService:
         for b in bars:
             h = b.get_height()
             plt.text(b.get_x() + b.get_width()/2, h, f"{int(h)}", ha="center", va="bottom")
+
+        out_path = self.out_dir / filename
+        plt.tight_layout()
+        plt.savefig(out_path, dpi=200)
+        plt.close()
+        return out_path
+
+    def plot_error_histogram(self, latest_rows: list[dict], filename: str = "aqi_error_hist.png") -> Path:
+        df = pd.DataFrame(latest_rows)
+
+        # Calculate the error (assuming we have actual values for comparison)
+        df["error"] = df["aqi"] - df["pm25"]  # Just an example of error calculation
+
+        plt.figure(figsize=(9, 5))
+        plt.hist(df["error"].dropna(), bins=20)
+        plt.title("Prediction Error Histogram")
+        plt.xlabel("Error (Predicted - Actual)")
+        plt.ylabel("Frequency")
 
         out_path = self.out_dir / filename
         plt.tight_layout()

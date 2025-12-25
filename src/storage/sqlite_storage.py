@@ -1,29 +1,26 @@
-from __future__ import annotations
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Iterable, Optional
 import sqlite3
-
+from pathlib import Path
+from typing import Iterable, Any
+from dataclasses import dataclass
 
 @dataclass
 class AQIRecord:
     city: str
-    aqi: Optional[float]
-    pm25: Optional[float]
-    pm10: Optional[float]
-    co: Optional[float]
-    no2: Optional[float]
-    so2: Optional[float]
-    o3: Optional[float]
-    timestamp: str  # ISO string (UTC)
-
+    aqi: float
+    pm25: float
+    pm10: float
+    co: float
+    no2: float
+    so2: float
+    o3: float
+    timestamp: str
 
 class SQLiteStorage:
     """SQLite persistence layer for AQI data."""
-
+    
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
-        self._init_db()
+        self._init_db()  # Initialize database on object creation
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path)
@@ -32,6 +29,7 @@ class SQLiteStorage:
         return conn
 
     def _init_db(self) -> None:
+        """Creates the necessary tables if they do not exist."""
         with self._connect() as conn:
             conn.execute(
                 """
@@ -49,18 +47,11 @@ class SQLiteStorage:
                 );
                 """
             )
-            conn.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_aqi_city_time
-                ON aqi_readings(city, timestamp);
-                """
-            )
 
     def insert_many(self, records: Iterable[AQIRecord]) -> int:
+        """Inserts multiple records into the aqi_readings table."""
         rows = [
-            (
-                r.city, r.aqi, r.pm25, r.pm10, r.co, r.no2, r.so2, r.o3, r.timestamp
-            )
+            (r.city, r.aqi, r.pm25, r.pm10, r.co, r.no2, r.so2, r.o3, r.timestamp)
             for r in records
         ]
         if not rows:
@@ -72,13 +63,13 @@ class SQLiteStorage:
                 INSERT INTO aqi_readings
                 (city, aqi, pm25, pm10, co, no2, so2, o3, timestamp)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                rows,
+                """, 
+                rows
             )
             return cur.rowcount
 
     def fetch_latest_per_city(self) -> list[dict[str, Any]]:
-        """Return the latest row per city."""
+        """Fetch the latest AQI readings per city from the database."""
         q = """
         SELECT t1.city, t1.aqi, t1.pm25, t1.pm10, t1.co, t1.no2, t1.so2, t1.o3, t1.timestamp
         FROM aqi_readings t1
